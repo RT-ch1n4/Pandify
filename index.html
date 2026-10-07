@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pandify — Run Your Sari-Sari Store on a Single Excel File</title>
+  <meta name="description" content="Pandify is a free, offline Excel system for sari-sari stores: Real-time dashboard, inventory, credit ledger and automatic profit reports.">
+  <meta name="theme-color" content="#059669">
+  <meta property="og:title" content="Pandify — Sari-Sari Store Excel System">
+  <meta property="og:description" content="POS, inventory, utang ledger and profit reports in one free Excel file.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🐼%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <style>
+    body{background:#f6fbf8;-webkit-font-smoothing:antialiased}
+    img{max-width:100%}
+    section[id]{scroll-margin-top:76px}
+    .tab-btn.active{background:var(--accent)!important;color:#fff!important;border-color:var(--accent)!important}
+    .sheet-chip.active{background:var(--dark)!important;color:#fff!important;border-color:var(--dark)!important}
+    .tab-btn:not(.active):hover,.sheet-chip:not(.active):hover{border-color:var(--accent)!important;color:var(--accent)!important}
+    .reveal.card-hover{transition:opacity .7s cubic-bezier(.22,1,.36,1),transform .3s cubic-bezier(.22,1,.36,1),box-shadow .3s,border-color .3s}
+    :focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:8px}
+    select:focus,input:focus{outline:none;border-color:var(--accent)!important;box-shadow:0 0 0 4px var(--accent-soft)}
+    .faq-q:hover{color:var(--accent)!important}
+    @media(max-width:767px){.tab-panel>div{padding:26px!important}}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.reveal{opacity:1!important;transform:none!important}.bar-grow{transform:none!important}}
+  </style>
+</head>
+
+<body>
+  
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<script>
+(function(){
+  var s=document.createElement('style');
+  s.textContent=':root{--bg:#f6fbf8;--card:#ffffff;--text:#0b1f17;--muted:#5b7268;--accent:#059669;--accent-soft:rgba(5,150,105,.12);--accent2:#d97706;--accent2-soft:rgba(217,119,6,.12);--dark:#064e3b;--border:rgba(11,31,23,.09)}'+
+  '*{box-sizing:border-box}html{scroll-behavior:smooth}'+
+  'body{margin:0}'+
+  '.reveal{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.22,1,.36,1),transform .7s cubic-bezier(.22,1,.36,1)}.reveal.visible{opacity:1;transform:translateY(0)}'+
+  '.card-hover{transition:transform .3s cubic-bezier(.22,1,.36,1),box-shadow .3s,border-color .3s}.card-hover:hover{transform:translateY(-5px);box-shadow:0 20px 45px rgba(6,78,59,.12);border-color:var(--accent)}'+
+  '.tab-btn{transition:all .25s ease}.tab-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 8px 20px rgba(5,150,105,.35)}'+
+  '.tab-panel{display:none}.tab-panel.active{display:block;animation:fadeIn .4s cubic-bezier(.22,1,.36,1)}@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}'+
+  '.faq-a{max-height:0;overflow:hidden;transition:max-height .4s ease}.faq-item.open .faq-a{max-height:240px}.faq-item.open .faq-icon{transform:rotate(45deg);background:var(--accent);color:#fff}.faq-icon{transition:all .3s ease}'+
+  '.grad-text{background:linear-gradient(100deg,var(--accent),#34d399);-webkit-background-clip:text;background-clip:text;color:transparent}'+
+  '.num{font-variant-numeric:tabular-nums;font-family:"JetBrains Mono",monospace}'+
+  '.pulse-dot{animation:pulse 2s infinite}@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.85)}}'+
+  '.bar-grow{transform-origin:bottom;animation:grow 1.1s cubic-bezier(.22,1,.36,1) forwards;transform:scaleY(0)}@keyframes grow{to{transform:scaleY(1)}}'+
+  '.float-badge{animation:floaty 4.5s ease-in-out infinite}@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}'+
+  '.toggle-switch{width:54px;height:30px;border-radius:15px;background:#cbd5e1;position:relative;cursor:pointer;transition:background .3s;flex-shrink:0}.toggle-switch .knob{position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:transform .3s cubic-bezier(.22,1,.36,1);box-shadow:0 2px 6px rgba(0,0,0,.25)}.toggle-switch.on{background:var(--accent)}.toggle-switch.on .knob{transform:translateX(24px)}'+
+  '.nav-link{position:relative;transition:color .2s}.nav-link::after{content:"";position:absolute;left:0;bottom:-4px;width:0;height:2px;background:var(--accent);transition:width .3s}.nav-link:hover,.nav-link.active{color:var(--accent)}.nav-link:hover::after,.nav-link.active::after{width:100%}'+
+  '.sheet-chip{transition:all .25s ease}.sheet-chip.active{background:var(--dark);color:#fff;border-color:var(--dark);transform:translateY(-2px);box-shadow:0 8px 18px rgba(6,78,59,.3)}'+
+  '::selection{background:var(--accent-soft)}'+
+  '.glow-ring{box-shadow:0 0 0 1px var(--accent),0 0 30px var(--accent-soft)}';
+  document.head.appendChild(s);
+})();
+</script>
+<div style="background:radial-gradient(800px 480px at 90% -8%,var(--accent-soft),transparent 60%),radial-gradient(600px 400px at -5% 30%,rgba(52,211,153,.12),transparent 60%),var(--bg);color:var(--text);font-family:'Figtree',sans-serif;">
+
+<!-- NAVBAR -->
+<nav style="position:sticky;top:0;z-index:50;background:rgba(246,251,248,.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);">
+  <div class="max-w-6xl mx-auto px-5 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-2.5">
+      <div style="width:45px;height:45px;border-radius:11px;background:linear-gradient(135deg,var(--dark),var(--accent));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:16px;box-shadow:0 6px 16px rgba(5,150,105,.35);"><img src="Panda.png" alt="Pandify logo" style="width: auto; height:auto;"></div>
+      <span style="font-weight:800;font-size:18px;letter-spacing:-.02em;">Pand<span style="color:var(--accent);">ify</span></span>
+    </div>
+    <div class="hidden md:flex items-center gap-7 text-sm font-semibold" style="color:var(--muted);">
+      <a href="#features" class="nav-link" data-sec="features" style="color:inherit;text-decoration:none;">Features</a>
+      <a href="#sheets" class="nav-link" data-sec="sheets" style="color:inherit;text-decoration:none;">Sheets</a>
+      <a href="#demo" class="nav-link" data-sec="demo" style="color:inherit;text-decoration:none;">Live Demo</a>
+      <a href="#insights" class="nav-link" data-sec="insights" style="color:inherit;text-decoration:none;">Insights</a>
+      <a href="#faq" class="nav-link" data-sec="faq" style="color:inherit;text-decoration:none;">FAQ</a>
+    </div>
+    <a href="#cta" style="text-decoration:none;padding:10px 22px;border-radius:11px;background:var(--accent);color:#fff;font-weight:700;font-size:14px;box-shadow:0 6px 18px rgba(5,150,105,.35);transition:transform .2s,box-shadow .2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 10px 24px rgba(5,150,105,.45)'" onmouseout="this.style.transform='';this.style.boxShadow='0 6px 18px rgba(5,150,105,.35)'">Get the Excel</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="max-w-6xl mx-auto px-5 pt-16 pb-20 grid md:grid-cols-2 gap-12 items-center">
+  <div class="reveal">
+    <div class="flex items-center gap-2 mb-5" style="display:inline-flex;padding:7px 15px;border-radius:20px;background:var(--accent-soft);border:1px solid var(--accent);">
+      <span class="pulse-dot" style="width:7px;height:7px;border-radius:50%;background:var(--accent);display:inline-block;"></span>
+      <span style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dark);">Group Mixed · BSIT 1A RESEARCH</span>
+    </div>
+    <h1 style="font-size:clamp(34px,5vw,54px);font-weight:900;line-height:1.06;letter-spacing:-.03em;margin:0 0 18px;">Run your sari-sari store with comfort — on a <span class="grad-text">single Excel file</span>.</h1>
+    <p style="color:var(--muted);font-size:17px;line-height:1.7;margin:0 0 28px;max-width:480px;">Real-time dashboard, Inventory tracking, Sales Log, Credit ledger, and Auto-generated profit reports. No internet, no monthly fees, no complicated software — just Microsoft Excel.</p>
+    <div class="flex flex-wrap gap-3">
+      <a href="#demo" style="text-decoration:none;padding:15px 30px;border-radius:13px;background:var(--accent);color:#fff;font-weight:800;font-size:15px;box-shadow:0 10px 28px rgba(5,150,105,.4);transition:transform .2s,box-shadow .2s;display:inline-block;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">Try Live Demo</a>
+      <a href="#features" style="text-decoration:none;padding:15px 30px;border-radius:13px;background:var(--card);color:var(--text);font-weight:700;font-size:15px;border:1px solid var(--border);transition:border-color .2s;display:inline-block;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">Explore Features</a>
+    </div>
+    <div class="flex flex-wrap items-center gap-x-6 gap-y-6 mt-8 text-sm font-semibold" style="color:var(--muted); margin-left: 3px;">
+      <span class="flex items-center gap-1.5"><span style="color:var(--accent);font-weight:900;">✓</span> Works offline</span>
+      <span class="flex items-center gap-1.5"><span style="color:var(--accent);font-weight:900;">✓</span> Zero cost</span>
+      <span class="flex items-center gap-1.5"><span style="color:var(--accent);font-weight:900;">✓</span> 10-min setup</span>
+    </div>
+  </div>
+<img class="reveal" src="Pandify2.png" alt="Pandify sari-sari store Excel system preview" width="450" fetchpriority="high" style="width:100%;max-width:450px;height:auto;display:block;justify-self:center;">
+
+
+</section>
+
+
+<!-- GROUP MIXED MEMBERS -->
+<section id="team" class="max-w-6xl mx-auto px-5 py-16">
+  <div class="reveal text-center mb-12">
+    <div style="font-size:12px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Meet The Team</div>
+    <h2 style="font-size:clamp(26px,4vw,38px);font-weight:900;letter-spacing:-.02em;margin:0 0 10px;">Group Mixed</h2>
+    <p style="color:var(--muted);font-size:15px;max-width:520px;margin:0 auto;">The minds behind Pandify — working together to help local store owners.</p>
+  </div>
+  <div class="reveal grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
+    <!-- Member 1 -->
+    <div class="member-card card-hover" style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:26px;text-align:center;">
+      <div class="avatar mx-auto mb-4" style="width:90px;height:90px;border-radius:50%;overflow:hidden;border:3px solid var(--accent-soft);"><img src="Tizon.jpg" alt="Photo of John David Tizon" loading="lazy" style="width:100%;height:100%;object-fit:cover;"></div>
+      <h3 style="font-weight:800;font-size:16px;margin:0 0 4px;">John David Tizon</h3>
+      <p style="font-size:13px;color:var(--muted);margin:0;">Project Head</p>
+    </div>
+    <!-- Member 2 -->
+    <div class="member-card card-hover" style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:26px;text-align:center;">
+     <div class="avatar mx-auto mb-4" style="width:90px;height:90px;border-radius:50%;overflow:hidden;border:3px solid var(--accent-soft);"><img src="Elmarck.jpg" alt="Photo of Elmarck Olveda" loading="lazy" style="width:100%;height:100%;object-fit:cover;"></div>
+      <h3 style="font-weight:800;font-size:16px;margin:0 0 4px;">Elmarck Olveda</h3>
+      <p style="font-size:13px;color:var(--muted);margin:0;">Documentation & Report</p>
+    </div>
+    <!-- Member 3 -->
+    <div class="member-card card-hover" style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:26px;text-align:center;">
+      <div class="avatar mx-auto mb-4" style="width:90px;height:90px;border-radius:50%;overflow:hidden;border:3px solid var(--accent-soft);"><img src="Magtalas.jpg" alt="Photo of Russel Hanz Magtalas" loading="lazy" style="width:100%;height:100%;object-fit:cover;"></div>
+      <h3 style="font-weight:800;font-size:16px;margin:0 0 4px;">Russel Hanz Magtalas</h3>
+      <p style="font-size:13px;color:var(--muted);margin:0;">Layout Designer</p>
+    </div>
+    <!-- Member 4 -->
+    <div class="member-card card-hover" style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:26px;text-align:center;">
+      <div class="avatar mx-auto mb-4" style="width:90px;height:90px;border-radius:50%;overflow:hidden;border:3px solid var(--accent-soft);"><img src="Blanco.jpg" alt="Photo of Angeló Blanco" loading="lazy" style="width:100%;height:100%;object-fit:cover;"></div>
+      <h3 style="font-weight:800;font-size:16px;margin:0 0 4px;">Angeló Blanco</h3>
+      <p style="font-size:13px;color:var(--muted);margin:0;">Technical Production Lead</p>
+    </div>
+    <!-- Member 5 -->
+    <div class="member-card card-hover" style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:26px;text-align:center;">
+      <div class="avatar mx-auto mb-4" style="width:90px;height:90px;border-radius:50%;overflow:hidden;border:3px solid var(--accent-soft);"><img src="John.jpg" alt="Photo of John Joshua Olveda" loading="lazy" style="width:100%;height:100%;object-fit:cover;"></div>
+      <h3 style="font-weight:800;font-size:16px;margin:0 0 4px;">John Joshua Olveda</h3>
+      <p style="font-size:13px;color:var(--muted);margin:0;">Researcher</p>
+    </div>
+  </div>
+</section>
+
+<!-- LIVE DASHBOARD -->
+<section id="dashboard" class="max-w-6xl mx-auto px-5 py-16">
+  <div class="reveal text-center mb-10">
+    <div style="font-size:12px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:var(--accent2);margin-bottom:8px;">A Real-time Overview</div>
+    <h2 style="font-size:clamp(26px,4vw,38px);font-weight:900;letter-spacing:-.02em;margin:0 0 10px;">Live Dashboard</h2>
+    <p style="color:var(--muted);font-size:15px;max-width:520px;margin:0 auto;">Everything you need to know about your store — updated in real-time.</p>
+  </div>
+  <div class="reveal" style="position:relative;max-width:800px;margin:0 auto;">
+    <div class="float-badge" style="position:absolute;top:-12px;right:16px;z-index:10;padding:10px 16px;border-radius:12px;background:var(--card);border:1px solid var(--border);box-shadow:0 14px 34px rgba(6,78,59,.15);">
+      <div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.05em;">TODAY'S PROFIT</div>
+      <div class="num" style="font-size:19px;font-weight:800;color:var(--accent);" id="heroProfit">₱42</div>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:22px;box-shadow:0 28px 70px rgba(6,78,59,.16);overflow:hidden;width:100%;">
+      <div style="background:linear-gradient(135deg,var(--dark),var(--accent));padding:20px 24px;color:#fff;">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <div style="font-size:10px;opacity:.8;letter-spacing:.12em;text-transform:uppercase;font-weight:700;">Live Overview</div>
+            <div style="font-size:18px;font-weight:900;margin-top:3px;">Store Dashboard</div>
+          </div>
+          <span class="pulse-dot" style="width:9px;height:9px;border-radius:50%;background:#6ee7b7;display:inline-block;"></span>
+        </div>
+      </div>
+      
+      <!-- Responsive Grid -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 p-5">
+        <div style="background:var(--accent-soft);border-radius:12px;padding:14px;text-align:center;">
+          <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;">Sales</div>
+          <div class="num" id="heroSales" style="font-size:18px;font-weight:800;margin-top:4px;">₱150</div>
+        </div>
+        <div style="background:rgba(16,185,129,.12);border-radius:12px;padding:14px;text-align:center;">
+          <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;">Profit</div>
+          <div class="num" id="heroProfit2" style="font-size:18px;font-weight:800;color:var(--accent);margin-top:4px;">₱42</div>
+        </div>
+        <div style="background:rgba(220,38,38,.08);border-radius:12px;padding:14px;text-align:center;">
+          <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;">Restock</div>
+          <div class="num" style="font-size:18px;font-weight:800;color:#dc2626;margin-top:4px;">2 items</div>
+        </div>
+        <div style="background:rgba(217,119,6,.1);border-radius:12px;padding:14px;text-align:center;">
+          <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;">Utang</div>
+          <div class="num" style="font-size:18px;font-weight:800;color:var(--accent2);margin-top:4px;">₱609</div>
+        </div>
+      </div>
+      
+      <div class="px-5 pb-5">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:10px;letter-spacing:.05em;">WEEKLY SALES</div>
+        <div style="display:flex;align-items:flex-end;gap:4px;height:72px;">
+          <div class="bar-grow" style="flex:1;height:42%;background:linear-gradient(180deg,var(--accent),#6ee7b7);border-radius:5px 5px 0 0;animation-delay:.05s;"></div>
+          <div class="bar-grow" style="flex:1;height:78%;background:linear-gradient(180deg,var(--accent),#6ee7b7);border-radius:5px 5px 0 0;animation-delay:.15s;"></div>
+          <div class="bar-grow" style="flex:1;height:54%;background:linear-gradient(180deg,var(--accent),#6ee7b7);border-radius:5px 5px 0 0;animation-delay:.25s;"></div>
+          <div class="bar-grow" style="flex:1;height:96%;background:linear-gradient(180deg,var(--accent2),#fcd34d);border-radius:5px 5px 0 0;animation-delay:.35s;"></div>
+          <div class="bar-grow" style="flex:1;height:64%;background:linear-gradient(180deg,var(--accent),#6ee7b7);border-radius:5px 5px 0 0;animation-delay:.45s;"></div>
+          <div class="bar-grow" style="flex:1;height:74%;background:linear-gradient(180deg,var(--accent),#6ee7b7);border-radius:5px 5px 0 0;animation-delay:.55s;"></div>
+          <div class="bar-grow" style="flex:1;height:48%;background:linear-gradient(180deg,var(--accent),#6ee7b7);border-radius:5px 5px 0 0;animation-delay:.65s;"></div>
+        </div>
+      </div>
+      
+      <div style="border-top:1px solid var(--border);padding:12px 20px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;background:rgba(220,38,38,.05);">
+        <span style="font-size:11px;font-weight:800;color:#dc2626;letter-spacing:.03em;">⚠ REORDER ALERT</span>
+        <span style="font-size:11px;color:var(--muted);font-weight:600;">Sprite 300ml · Alaska Powder</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS STRIP -->
+<div id="benefits" class="max-w-6xl mx-auto px-5 pt-16">
+  <div class="reveal text-center mb-10">
+    <div style="font-size:12px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:var(--accent2);margin-bottom:8px;">Comfort system · No cost</div>
+    <h2 style="font-size:clamp(26px,4vw,38px);font-weight:900;letter-spacing:-.02em;margin:0 0 10px;">System Properties and Benefits</h2>
+    <p style="color:var(--muted);font-size:15px;max-width:520px;margin:0 auto;">Everything a sari-sari store or small business needs to grow digitally.</p>
+  </div>
+<section class="pb-8">
+  <div class="reveal grid grid-cols-2 md:grid-cols-4 gap-4" style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:30px;box-shadow:0 6px 24px rgba(6,78,59,.06);">
+    <div class="text-center"><div class="num counter" data-target="6" style="font-size:38px;font-weight:900;color:var(--accent);">0</div><div style="font-size:13px;color:var(--muted);font-weight:700;margin-top:3px;">Integrated Sheets</div></div>
+    <div class="text-center"><div class="num counter" data-target="73" style="font-size:38px;font-weight:900;color:var(--dark);">0</div><div style="font-size:13px;color:var(--muted);font-weight:700;margin-top:3px;">Live Formulas</div></div>
+    <div class="text-center"><div class="num" style="font-size:38px;font-weight:900;color:#dc2626;">₱0</div><div style="font-size:13px;color:var(--muted);font-weight:700;margin-top:3px;">Monthly Cost</div></div>
+    <div class="text-center"><div class="num counter" data-target="10" style="font-size:38px;font-weight:900;color:var(--accent2);">0</div><div style="font-size:13px;color:var(--muted);font-weight:700;margin-top:3px;">Minute Setup</div></div>
+  </div>
+</section>
+</div>
+
+<!-- PROBLEM -->
+<section class="max-w-6xl mx-auto px-5 py-16">
+  <div class="reveal text-center mb-12">
+    <div style="font-size:12px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:var(--accent2);margin-bottom:8px;">The Old Way</div>
+    <h2 style="font-size:clamp(26px,4vw,38px);font-weight:900;letter-spacing:-.02em;margin:0;">Manual notebooks cost store owners real money</h2>
+  </div>
+  <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="reveal card-hover" style="background:var(--card);border:1px solid var(--border);border-radius:18px;padding:26px;">
+      <div style="width:44px;height:44px;border-radius:12px;background:rgba(220,38,38,.1);display:flex;align-items:center;justify-content:center;color:#dc2626;margin-bottom:16px;"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+      <h3 style="font-weight:800;font-size:16px;margin:0 0 7px;">Tattered notebooks</h3>
+      <p style="font-size:13px;color:var(--muted);line-height:1.65;margin:0;">Torn pages, smudged ink, lost receipts — records vanish when you need them most.</p>
+    </div>
+    <div class="reveal card-hover" style="background:var(--card);border:1px solid var(--border);border-radius:18px;padding:26px;">
+      <div style="width:44px;height:44px;border-radius:12px;background:rgba(220,38,38,.1);display:flex;align-items:center;justify-content:center;color:#dc2626;margin-bottom:16px;"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+      <h3 style="font-weight:800;font-size:16px;margin:0 0 7px;">Utang forgotten</h3>
+      <p style="font-size:13px;color:var(--muted);line-height:1.65;margin:0;">No clear ledger means unpaid balances slip through — money you can never collect.</p>
+    </div>
+    <div class="reveal card-hover" style="background:var(--card);border:1px solid var(--border);border-radius:18px;padding:26px;">
+      <div style="width:44px;height:44px;border-radius:12px;background:rgba(220,38,38,.1);display:flex;align-items:center;justify-content:center;color:#dc2626;margin-bottom:16px;"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+      <h3 style="font-weight:800;font-size:16px;margin:0 0 7px;">Midnight stockouts</h3>
+      <p style="font-size:13px;color:var(--muted);line-height:1.65;margin:0;">No one tracks stock — best-sellers run out, and customers walk to the next store.</p>
+    </div>
+    <div class="reveal card-hover" style="background:var(--card);border:1px solid var(--border);border-radius:18px;padding:26px;">
+      <div style="width:44px;height:44px;border-radius:12px;background:rgba(220,38,38,.1);display:flex;align-items:center;justify-content:center;color:#dc2626;margin-bottom:16px;"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+      <h3 style="font-weight:800;font-size:16px;margin:0 0 7px;">Profit is a guess</h3>
+      <p style="font-size:13px;color:var(--muted);line-height:1.65;margin:0;">Hours of counting coins nightly, yet owners still can't say exactly what they earned.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES TABS -->
+<section id="features" class="max-w-6xl mx-auto px-5 py-16">
+  <div class="reveal text-center mb-10">
+    <div style="font-size:12px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">One File · Five Sheets</div>
+    <h2 style="font-size:clamp(26px,4vw,38px);font-weight:900;letter-spacing:-.02em;margin:0;">Everything a store needs, already built in</h2>
+  </div>
+  <div class="reveal flex flex-wrap gap-2.5 justify-center mb-8">
+    <button type="button" class="tab-btn active" data-tab="t1" style="padding:11px 22px;border-radius:11px;border:1px solid var(--border);background:var(--card);font-weight:700;font-size:13px;cursor:pointer;color:var(--muted);font-family:inherit;">Dashboard</button>
+    <button type="button" class="tab-btn" data-tab="t0" style="padding:11px 22px;border-radius:11px;border:1px solid var(--border);background:var(--card);font-weight:700;font-size:13px;cursor:pointer;color:var(--muted);font-family:inherit;">Sales Log</button>
+    <button type="button" class="tab-btn" data-tab="t3" style="padding:11px 22px;border-radius:11px;border:1px solid var(--border);background:var(--card);font-weight:700;font-size:13px;cursor:pointer;color:var(--muted);font-family:inherit;">Smart Inventory</button>
+    <button type="button" class="tab-btn" data-tab="t4" style="padding:11px 22px;border-radius:11px;border:1px solid var(--border);background:var(--card);font-weight:700;font-size:13px;cursor:pointer;color:var(--muted);font-family:inherit;">Credit / Utang</button>
+    <button type="button" class="tab-btn" data-tab="t5" style="padding:11px 22px;border-radius:11px;border:1px solid var(--border);background:var(--card);font-weight:700;font-size:13px;cursor:pointer;color:var(--muted);font-family:inherit;">Auto Reports</button>
+  </div>
+
+  <div class="reveal" style="background:var(--card);border:1px solid var(--border);border-radius:22px;overflow:hidden;box-shadow:0 14px 44px rgba(6,78,59,.09);">
+    <div id="t1" class="tab-panel active grid md:grid-cols-2">
+      <div style="padding:38px;">
+        <h3 style="font-size:23px;font-weight:900;margin:0 0 13px;">Live Dashboard</h3>
+        <p style="color:var(--muted);font-size:14.5px;line-height:1.7;margin:0 0 20px;">One glance tells you everything: today's sales, profit, items needing restock, and total utang — all updating in real time as you log sales.</p>
+        <ul style="list-style:none;padding:0;margin:0;font-size:14px;line-height:2.3;font-weight:500;">
+          <li><span style="color:var(--accent);font-weight:900;margin-right:9px;">✓</span>6 live KPI cards, auto-computed</li>
+          <li><span style="color:var(--accent);font-weight:900;margin-right:9px;">✓</span>7-day sales trend chart</li>
+          <li><span style="color:var(--accent);font-weight:900;margin-right:9px;">✓</span>Low-stock reorder alerts</li>
+          <li><span style="color:var(--accent);font-weight:900;margin-right:9px;">✓</span>Step-by-step usage guide</li>
+        </ul>
+      </div>
+      <div style="background:linear-gradient(160deg,#ecfdf5,#70e6aa);padding:38px;display:flex;align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:16px;box-shadow:0 14px 34px rgba(6,78,59,.15);padding:22px;width:100%;max-width:290px;">
+          <div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:14px;">Today at a Glance</div>
+          <div class="grid grid-cols-2 gap-2.5">
+            <div style="background:var(--accent-soft);border-radius:10px;padding:12px;"><div style="font-size:9px;color:var(--muted);font-weight:800;letter-spacing:.05em;">SALES</div><div class="num" style="font-weight:800;font-size:16px;">₱150</div></div>
+            <div style="background:rgba(16,185,129,.12);border-radius:10px;padding:12px;"><div style="font-size:9px;color:var(--muted);font-weight:800;letter-spacing:.05em;">PROFIT</div><div class="num" style="font-weight:800;font-size:16px;color:var(--accent);">₱42</div></div>
+            <div style="background:rgba(220,38,38,.08);border-radius:10px;padding:12px;"><div style="font-size:9px;color:var(--muted);font-weight:800;letter-spacing:.05em;">RESTOCK</div><div class="num" style="font-weight:800;font-size:16px;color:#dc2626;">2</div></div>
+            <div style="background:rgba(217,119,6,.1);border-radius:10px;padding:12px;"><div style="font-size:9px;color:var(--muted);font-weight:800;letter-spacing:.05em;">UTANG</div><div class="num" style="font-weight:800;font-size:16px;color:var(--accent2);">₱609</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+        <div id="t0" class="tab-panel grid md:grid-cols-2">
+      <div style="padding:38px;">
+        <h3 style="font-size:23px;font-weight:900;margin:0 0 13px;">Sales Log</h3>
+        <p style="color:var(--muted);font-size:14.5px;line-height:1.7;margin:0 0 20px;">A sales log where you see everything: unit price, total sale, cost, profit, payment, and customer name for credit transactions — it auto-computes every transaction in real time as you log sales.</p>
+        <ul style="list-style:none;padding:0;margin:0;font-size:14px;line-height:2.3;font-weight:500;">
+          <li><span style="color:var(--accent);font-weight:900;margin-right:9px;">✓</span>Full transaction sales log</li>
+          <li><span style="color:var(--accent);font-weight:900;margin-right:9px;">✓</span>Sales & profit are auto-computed precisely</li>
+          <li><span style="color:var(--accent);font-weight:900;margin-right:9px;">✓</span>No more guessing profit for each product</li>
+          <li><span style="color:var(--accent);font-weight:900;margin-right:9px;">✓</span>All-in-one transactional logs</li>
+        </ul>
+      </div>
+      <div style="background:linear-gradient(160deg,#ecfdf5,#8ea7f5);padding:38px;display:flex;align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:16px;box-shadow:0 14px 34px rgba(6,78,59,.15);padding:22px;width:100%;max-width:290px;">
+          <div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:14px;">Transactional Data</div>
+          <div class="grid grid-cols-2 gap-2.5">
+            <div style="background:var(--accent-soft);border-radius:10px;padding:12px;"><div style="font-size:9px;color:var(--muted);font-weight:800;letter-spacing:.05em;">Product</div><div class="num" style="font-weight:800;font-size:16px;">Piattos</div></div>
+            <div style="background:rgba(16,185,129,.12);border-radius:10px;padding:12px;"><div style="font-size:9px;color:var(--muted);font-weight:800;letter-spacing:.05em;">Qty</div><div class="num" style="font-weight:800;font-size:16px;color:var(--accent);">3</div></div>
+            <div style="background:rgba(220,38,38,.08);border-radius:10px;padding:12px;"><div style="font-size:9px;color:var(--muted);font-weight:800;letter-spacing:.05em;">Unit Price per Qty</div><div class="num" style="font-weight:800;font-size:16px;">₱25 × 3</div></div>
+            <div style="background:rgba(217,119,6,.1);border-radius:10px;padding:12px;"><div style="font-size:9px;color:var(--muted);font-weight:800;letter-spacing:.05em;">Total Sale</div><div class="num" style="font-weight:800;font-size:16px;color:var(--accent2);">₱75</div></div>
+            <div style="background:rgba(220,38,38,.08);border-radius:10px;padding:12px;"><div style="font-size:9px;color:var(--muted);font-weight:800;letter-spacing:.05em;">Total Cost</div><div class="num" style="font-weight:800;font-size:16px;">₱54 (₱18)</div></div>
+            <div style="background:var(--accent-soft);border-radius:10px;padding:12px;"><div style="font-size:9px;color:var(--muted);font-weight:800;letter-spacing:.05em;">Profit</div><div class="num" style="font-weight:800;font-size:16px;">₱21</div> </div></div>
+        </div>
+      </div>
+    </div>
+    <div id="t3" class="tab-panel grid md:grid-cols-2">
+      <div style="padding:38px;">
+        <h3 style="font-size:23px;font-weight:900;margin:0 0 13px;">Smart Inventory</h3>
+        <p style="color:var(--muted);font-size:14.5px;line-height:1.7;margin:0 0 20px;">Every product's cost, selling price, and stock level in one master list. Low-stock items flash red automatically — never run out again.</p>
+        <ul style="list-style:none;padding:0;margin:0;font-size:14px;line-height:2.3;font-weight:500;">
+          <li><span style="color:var(--accent);font-weight:900;margin-right:9px;">✓</span>Reorder-level alerts (red highlight)</li>
+          <li><span style="color:var(--accent);font-weight:900;margin-right:9px;">✓</span>Live stock value computation</li>
+          <li><span style="color:var(--accent);font-weight:900;margin-right:9px;">✓</span>Cost & margin per product</li>
+          <li><span style="color:var(--accent);font-weight:900;margin-right:9px;">✓</span>Dropdown validation — no typos</li>
+        </ul>
+      </div>
+      <div style="background:linear-gradient(160deg,#fef2f2,#d993c9);padding:38px;display:flex;align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:16px;box-shadow:0 14px 34px rgba(6,78,59,.15);padding:20px;width:100%;max-width:290px;font-size:12.5px;">
+          <div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px;">Stock Status</div>
+          <div style="display:flex;justify-content:space-between;padding:8px 11px;border-radius:9px;background:rgba(16,185,129,.1);margin-bottom:5px;"><span>Coke Mismo</span><span class="num" style="font-weight:800;color:var(--accent);">48 · OK</span></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 11px;border-radius:9px;background:rgba(16,185,129,.1);margin-bottom:5px;"><span>Pancit Canton</span><span class="num" style="font-weight:800;color:var(--accent);">120 · OK</span></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 11px;border-radius:9px;background:rgba(220,38,38,.1);margin-bottom:5px;"><span style="font-weight:800;color:#dc2626;">Sprite 300ml</span><span class="num" style="font-weight:900;color:#dc2626;">12 · REORDER</span></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 11px;border-radius:9px;background:rgba(220,38,38,.1);"><span style="font-weight:800;color:#dc2626;">Alaska Powder</span><span class="num" style="font-weight:900;color:#dc2626;">8 · REORDER</span></div>
+        </div>
+      </div>
+    </div>
+    <div id="t4" class="tab-panel grid md:grid-cols-2">
+      <div style="padding:38px;">
+        <h3 style="font-size:23px;font-weight:900;margin:0 0 13px;">Credit / Utang Ledger</h3>
+        <p style="color:var(--muted);font-size:14.5px;line-height:1.7;margin:0 0 20px;">Never lose track of who owes you. Log a utang once, record partial payments, and the balance — plus status — updates automatically.</p>
+        <ul style="list-style:none;padding:0;margin:0;font-size:14px;line-height:2.3;font-weight:500;">
+          <li><span style="color:var(--accent);font-weight:900;margin-right:9px;">✓</span>Auto balance & status (Unpaid/Partial/Paid)</li>
+          <li><span style="color:var(--accent);font-weight:900;margin-right:9px;">✓</span>Color-coded by status</li>
+          <li><span style="color:var(--accent);font-weight:900;margin-right:9px;">✓</span>Total outstanding, one click away</li>
+          <li><span style="color:var(--accent);font-weight:900;margin-right:9px;">✓</span>Filter to see who still owes</li>
+        </ul>
+      </div>
+      <div style="background:linear-gradient(160deg,#f5f3ff,#6fa1f7);padding:38px;display:flex;align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:16px;box-shadow:0 14px 34px rgba(6,78,59,.15);padding:20px;width:100%;max-width:290px;font-size:12.5px;">
+          <div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px;">Utang Ledger</div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--border);"><span>Aling Nena</span><span class="num" style="font-weight:800;color:#dc2626;">₱303</span></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--border);"><span>Kuya Ben</span><span class="num" style="font-weight:800;color:#dc2626;">₱170</span></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--border);"><span>Tita Mila</span><span class="num" style="font-weight:800;color:var(--accent2);">₱136 · partial</span></div>
+          <div style="display:flex;justify-content:space-between;padding:12px 0;font-weight:900;font-size:14px;"><span>TOTAL</span><span class="num" style="color:#7c3aed;">₱609</span></div>
+        </div>
+      </div>
+    </div>
+    <div id="t5" class="tab-panel grid md:grid-cols-2">
+      <div style="padding:38px;">
+        <h3 style="font-size:23px;font-weight:900;margin:0 0 13px;">Auto-Generated Reports</h3>
+        <p style="color:var(--muted);font-size:14.5px;line-height:1.7;margin:0 0 20px;">Daily, weekly, and monthly sales & profit — computed for you. Plus a top-selling products ranking so you know what to stock more of.</p>
+        <ul style="list-style:none;padding:0;margin:0;font-size:14px;line-height:2.3;font-weight:500;">
+          <li><span style="color:var(--accent);font-weight:900;margin-right:9px;">✓</span>Daily (last 7 days) breakdown</li>
+          <li><span style="color:var(--accent);font-weight:900;margin-right:9px;">✓</span>Weekly & monthly summaries</li>
+          <li><span style="color:var(--accent);font-weight:900;margin-right:9px;">✓</span>Profit margin % per period</li>
+          <li><span style="color:var(--accent);font-weight:900;margin-right:9px;">✓</span>Top products by quantity sold</li>
+        </ul>
+      </div>
+      <div style="background:linear-gradient(160deg,#eff6ff,#89f0ec);padding:38px;display:flex;align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:16px;box-shadow:0 14px 34px rgba(6,78,59,.15);padding:20px;width:100%;max-width:290px;font-size:12.5px;">
+          <div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px;">This Month</div>
+          <div style="display:flex;justify-content:space-between;padding:7px 0;"><span style="color:var(--muted);">Sales</span><span class="num" style="font-weight:800;">₱1,500</span></div>
+          <div style="display:flex;justify-content:space-between;padding:7px 0;"><span style="color:var(--muted);">Cost</span><span class="num" style="font-weight:800;">₱1,080</span></div>
+          <div style="display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid var(--border);font-weight:900;font-size:14px;"><span>Profit</span><span class="num" style="color:var(--accent);">₱420</span></div>
+          <div style="display:flex;justify-content:space-between;padding:5px 0;font-size:11.5px;"><span style="color:var(--muted);">Margin</span><span class="num" style="font-weight:800;color:#2563eb;">28%</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SHEETS SWITCHER -->
+<section id="sheets" class="max-w-6xl mx-auto px-5 py-16">
+  <div class="reveal text-center mb-10">
+    <div style="font-size:12px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Inside the File</div>
+    <h2 style="font-size:clamp(26px,4vw,38px);font-weight:900;letter-spacing:-.02em;margin:0 0 10px;">Five sheets. One workbook</h2>
+    <p style="color:var(--muted);font-size:15px;max-width:520px;margin:0 auto;">Click any sheet to preview what it does.</p>
+  </div>
+  <div class="reveal flex flex-wrap gap-2 justify-center mb-6">
+    <button type="button" class="sheet-chip active" data-sheet="s0" style="padding:9px 18px;border-radius:10px;border:1px solid var(--border);background:var(--card);font-weight:700;font-size:12.5px;cursor:pointer;color:var(--muted);font-family:inherit;">Dashboard</button>
+    <button type="button" class="sheet-chip" data-sheet="s2" style="padding:9px 18px;border-radius:10px;border:1px solid var(--border);background:var(--card);font-weight:700;font-size:12.5px;cursor:pointer;color:var(--muted);font-family:inherit;">Sales Log</button>
+    <button type="button" class="sheet-chip" data-sheet="s3" style="padding:9px 18px;border-radius:10px;border:1px solid var(--border);background:var(--card);font-weight:700;font-size:12.5px;cursor:pointer;color:var(--muted);font-family:inherit;">Inventory</button>
+    <button type="button" class="sheet-chip" data-sheet="s4" style="padding:9px 18px;border-radius:10px;border:1px solid var(--border);background:var(--card);font-weight:700;font-size:12.5px;cursor:pointer;color:var(--muted);font-family:inherit;">Credit Ledger</button>
+    <button type="button" class="sheet-chip" data-sheet="s5" style="padding:9px 18px;border-radius:10px;border:1px solid var(--border);background:var(--card);font-weight:700;font-size:12.5px;cursor:pointer;color:var(--muted);font-family:inherit;">Reports</button>
+  </div>
+  <div class="reveal" id="sheetPreview" style="background:var(--dark);border-radius:18px;padding:26px 30px;color:#fff;min-height:110px;box-shadow:0 18px 44px rgba(6,78,59,.3);transition:all .3s;">
+    <div id="sheetTitle" style="font-weight:900;font-size:18px;margin-bottom:6px;">Dashboard</div>
+    <p id="sheetDesc" style="margin:0;font-size:14px;opacity:.85;line-height:1.6;">Your command center — 6 live KPI cards, a 7-day sales trend chart, low-stock alerts, and a how-to guide. Everything updates as you log sales.</p>
+  </div>
+</section>
+
+<!-- LIVE DEMO -->
+<section id="demo" class="max-w-6xl mx-auto px-5 py-16">
+  <div class="reveal text-center mb-10">
+    <div style="font-size:12px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:var(--accent2);margin-bottom:8px;">Ready to connect · Excel to VBA/Macro</div>
+    <h2 style="font-size:clamp(26px,4vw,38px);font-weight:900;letter-spacing:-.02em;margin:0 0 10px;">Live POS Demo</h2>
+    <p style="color:var(--muted);font-size:15px;max-width:520px;margin:0 auto;">A live demo where every real-world  transaction happens. Pick a product, set quantity and cash — total and change compute instantly.</p>
+  </div>
+  <div class="reveal grid md:grid-cols-2 gap-6 items-start">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:30px;box-shadow:0 14px 40px rgba(6,78,59,.08);">
+      <div style="font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:18px;">Cashier Input</div>
+      <label for="demoProd" style="font-size:13px;font-weight:700;display:block;margin-bottom:7px;">Product</label>
+      <select id="demoProd" style="width:100%;padding:13px 15px;border-radius:11px;border:1px solid var(--border);font-size:14px;font-family:inherit;margin-bottom:17px;background:var(--bg);color:var(--text);">
+        <option value="25">Coke Mismo 300ml — ₱25</option>
+        <option value="12">Lucky Me Pancit Canton — ₱12</option>
+        <option value="11">Nescafe 3in1 Coffee — ₱11</option>
+        <option value="50">Rice (per kg) — ₱50</option>
+        <option value="9">Egg (per piece) — ₱9</option>
+        <option value="25">Piattos Chips — ₱25</option>
+      </select>
+      <label for="demoQty" style="font-size:13px;font-weight:700;display:block;margin-bottom:7px;">Quantity</label>
+      <input id="demoQty" type="number" inputmode="numeric" min="1" value="2" style="width:100%;padding:13px 15px;border-radius:11px;border:1px solid var(--border);font-size:14px;font-family:inherit;margin-bottom:17px;background:var(--bg);color:var(--text);">
+      <label for="demoCash" style="font-size:13px;font-weight:700;display:block;margin-bottom:7px;">Cash Tendered (₱)</label>
+      <input id="demoCash" type="number" inputmode="decimal" min="0" value="100" style="width:100%;padding:13px 15px;border-radius:11px;border:1px solid var(--accent);font-size:14px;font-family:inherit;background:var(--accent-soft);color:var(--dark);font-weight:700;">
+    </div>
+    <div style="background:linear-gradient(160deg,var(--dark),var(--accent));border-radius:20px;padding:30px;color:#fff;box-shadow:0 20px 50px rgba(6,78,59,.4);">
+      <div style="font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.75;margin-bottom:20px;">Receipt Preview</div>
+      <div id="demoLine" style="display:flex;justify-content:space-between;font-size:15px;padding:11px 0;border-bottom:1px dashed rgba(255,255,255,.35);"><span id="demoLineName">Coke Mismo × 2</span><span id="demoLineAmt" class="num" style="font-weight:800;">₱50.00</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:14px;padding:13px 0;opacity:.88;"><span>Cash Tendered</span><span id="demoCashOut" class="num">₱100.00</span></div>
+      <div style="background:rgba(255,255,255,.15);border-radius:13px;padding:18px;margin-top:10px;backdrop-filter:blur(4px);">
+        <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:13px;opacity:.85;font-weight:600;">CHANGE DUE</span><span id="demoChange" class="num" style="font-size:32px;font-weight:900;color:#a7f3d0;">₱50.00</span></div>
+      </div>
+      <div id="demoWarn" role="alert" style="display:none;margin-top:14px;padding:11px 15px;border-radius:10px;background:rgba(220,38,38,.35);font-size:12.5px;font-weight:700;">Cash is less than total — need more payment.</div>
+    </div>
+  </div>
+</section>
+
+<!-- CHARTS / INSIGHTS -->
+<section id="insights" class="max-w-6xl mx-auto px-5 py-16">
+  <div class="reveal text-center mb-10">
+    <div style="font-size:12px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Auto-Generated Insights</div>
+    <h2 style="font-size:clamp(26px,4vw,38px);font-weight:900;letter-spacing:-.02em;margin:0 0 10px;">See your business clearly</h2>
+    <p style="color:var(--muted);font-size:14px;">Sample store data shown — your real numbers appear automatically as you log sales.</p>
+  </div>
+  <div class="grid md:grid-cols-2 gap-6">
+<div class="reveal" style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:24px;box-shadow:0 10px 30px rgba(6,78,59,.07);">
+  <h3 style="font-size:17px;font-weight:900;margin:0 0 4px;">Daily Sales & Profit Trend</h3>
+  <p style="font-size:12.5px;color:var(--muted);margin:0 0 12px;">Last 7 days · auto-computed from Sales Log</p>
+  <div id="chartLine" style="height:300px;width:100%;"></div>
+  <script>
+  (function init(n){try{var el=document.getElementById('chartLine');if(!el)return;if(typeof echarts==='undefined'){if(n<40){setTimeout(function(){init(n+1)},250);return;}el.textContent='Chart loading failed';return;}
+  var st=getComputedStyle(document.documentElement);var ac=st.getPropertyValue('--accent').trim()||'#059669';var mu=st.getPropertyValue('--muted').trim()||'#5b7268';var bd=st.getPropertyValue('--border').trim()||'rgba(11,31,23,.09)';
+  var profitColor='#f59e0b';var gradSales={type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:ac+'44'},{offset:1,color:ac+'05'}]};
+  var gradProfit={type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:profitColor+'44'},{offset:1,color:profitColor+'05'}]};
+  var c=echarts.init(el);c.setOption({backgroundColor:'transparent',tooltip:{trigger:'axis'},legend:{data:['Sales','Profit'],textStyle:{color:mu,fontSize:12},top:0},grid:{left:'3%',right:'4%',bottom:'3%',top:'12%',containLabel:true},
+  xAxis:{type:'category',data:['Sep 25','Sep 26','Sep 27','Sep 28','Sep 29','Sep 30','Oct 1'],axisLabel:{color:mu,fontSize:11},axisTick:{show:false},axisLine:{lineStyle:{color:bd}}},
+  yAxis:{type:'value',scale:true,axisLabel:{color:mu,fontSize:11,formatter:'₱{value}'},splitLine:{lineStyle:{color:bd}}},
+  series:[
+    {name:'Sales',type:'line',data:[150,335,210,380,240,290,150],symbol:'circle',symbolSize:6,lineStyle:{width:3,color:ac},itemStyle:{color:ac},areaStyle:{color:gradSales}},
+    {name:'Profit',type:'line',data:[42,94,59,106,67,81,42],symbol:'circle',symbolSize:6,lineStyle:{width:3,color:profitColor},itemStyle:{color:profitColor},areaStyle:{color:gradProfit}}
+  ]});
+  window.addEventListener('resize',function(){c.resize()});}catch(e){console.error(e)}})(0);
+  </script>
+</div>
+
+    <div class="reveal" style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:24px;box-shadow:0 10px 30px rgba(6,78,59,.07);">
+      <h3 style="font-size:17px;font-weight:900;margin:0 0 4px;">Top Selling Products</h3>
+      <p style="font-size:12.5px;color:var(--muted);margin:0 0 12px;">By quantity sold · restock these first</p>
+      <div id="chartBar" style="height:300px;width:100%;"></div>
+      <script>
+      (function init(n){try{var el=document.getElementById('chartBar');if(!el)return;if(typeof echarts==='undefined'){if(n<40){setTimeout(function(){init(n+1)},250);return;}el.textContent='Chart loading failed';return;}
+      var st=getComputedStyle(document.documentElement);var ac2=st.getPropertyValue('--accent2').trim()||'#d97706';var mu=st.getPropertyValue('--muted').trim()||'#5b7268';var bd=st.getPropertyValue('--border').trim()||'rgba(11,31,23,.09)';
+      var grad={type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:ac2},{offset:1,color:ac2+'66'}]};
+      var c=echarts.init(el);c.setOption({backgroundColor:'transparent',tooltip:{trigger:'axis',axisPointer:{type:'shadow'}},grid:{left:'3%',right:'4%',bottom:'3%',containLabel:true},
+      xAxis:{type:'value',axisLabel:{color:mu,fontSize:11},splitLine:{lineStyle:{color:bd}}},
+      yAxis:{type:'category',data:['Egg','Rice/kg','Pancit Canton','Coke Mismo','Coffee 3in1'],axisLabel:{color:mu,fontSize:11},axisTick:{show:false},axisLine:{lineStyle:{color:bd}}},
+      series:[{type:'bar',data:[28,22,19,15,12],barWidth:18,itemStyle:{borderRadius:[0,6,6,0],color:grad}}]});
+      window.addEventListener('resize',function(){c.resize()});}catch(e){console.error(e)}})(0);
+      </script>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARE -->
+<section id="compare" class="max-w-6xl mx-auto px-5 py-16">
+  <div class="reveal text-center mb-10">
+    <div style="font-size:12px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Before vs After</div>
+    <h2 style="font-size:clamp(26px,4vw,38px);font-weight:900;letter-spacing:-.02em;margin:0 0 16px;">Manual Notebook vs Excel System</h2>
+    <div class="flex items-center justify-center gap-3 text-sm font-bold">
+      <span id="lblManual" style="color:var(--muted);transition:color .3s;">Manual</span>
+      <div id="compareToggle" class="toggle-switch on" role="switch" aria-checked="true" aria-label="Show Excel system" tabindex="0"><div class="knob"></div></div>
+      <span id="lblExcel" style="color:var(--accent);transition:color .3s;">Excel System</span>
+    </div>
+  </div>
+  <div class="reveal grid md:grid-cols-2 gap-5">
+    <div id="cardManual" style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:30px;opacity:.5;transition:opacity .3s;">
+      <h3 style="font-size:19px;font-weight:900;margin:0 0 18px;color:#991b1b;">The Old Way</h3>
+      <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px dashed var(--border);font-size:14px;font-weight:500;"><span>Time to close store daily</span><span class="num font-extrabold" style="color:#dc2626;">2–3 hrs</span></div>
+      <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px dashed var(--border);font-size:14px;font-weight:500;"><span>Utang tracked accurately</span><span class="font-extrabold" style="color:#dc2626;">Rarely</span></div>
+      <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px dashed var(--border);font-size:14px;font-weight:500;"><span>Stockouts per month</span><span class="num font-extrabold" style="color:#dc2626;">5–8×</span></div>
+      <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px dashed var(--border);font-size:14px;font-weight:500;"><span>Profit certainty</span><span class="font-extrabold" style="color:#dc2626;">Guessing</span></div>
+      <div style="display:flex;justify-content:space-between;padding:12px 0;font-size:14px;font-weight:500;"><span>Lost money / month</span><span class="num font-extrabold" style="color:#dc2626;">₱500+</span></div>
+    </div>
+    <div id="cardExcel" style="background:linear-gradient(160deg,#ecfdf5,#d1fae5);border:2px solid var(--accent);border-radius:20px;padding:30px;box-shadow:0 18px 48px rgba(5,150,105,.22);transition:transform .3s;">
+      <h3 style="font-size:19px;font-weight:900;margin:0 0 18px;color:var(--accent);">With Pandify</h3>
+      <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px dashed rgba(5,150,105,.25);font-size:14px;font-weight:600;"><span>Time to close store daily</span><span class="num font-extrabold" style="color:var(--accent);">10–15 min</span></div>
+      <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px dashed rgba(5,150,105,.25);font-size:14px;font-weight:600;"><span>Utang tracked accurately</span><span class="font-extrabold" style="color:var(--accent);">100% auto</span></div>
+      <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px dashed rgba(5,150,105,.25);font-size:14px;font-weight:600;"><span>Stockouts per month</span><span class="num font-extrabold" style="color:var(--accent);">~0 (alerts)</span></div>
+      <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px dashed rgba(5,150,105,.25);font-size:14px;font-weight:600;"><span>Profit certainty</span><span class="font-extrabold" style="color:var(--accent);">Exact, live</span></div>
+      <div style="display:flex;justify-content:space-between;padding:12px 0;font-size:14px;font-weight:600;"><span>Money saved / month</span><span class="num font-extrabold" style="color:var(--accent);">₱500+</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="max-w-6xl mx-auto px-5 py-16">
+  <div class="reveal text-center mb-12">
+    <div style="font-size:12px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Setup in Minutes</div>
+    <h2 style="font-size:clamp(26px,4vw,38px);font-weight:900;letter-spacing:-.02em;margin:0;">How it works — 5 simple steps</h2>
+  </div>
+  <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
+    <div class="reveal card-hover" style="background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px;position:relative;">
+      <div class="num" style="font-size:34px;font-weight:900;color:var(--accent);opacity:.2;position:absolute;top:12px;right:16px;">01</div>
+      <div style="width:40px;height:40px;border-radius:11px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;color:var(--accent);margin-bottom:14px;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
+      <h4 style="font-weight:800;font-size:14.5px;margin:0 0 6px;">List products once</h4>
+      <p style="font-size:12.5px;color:var(--muted);line-height:1.55;margin:0;">Enter cost, price & reorder level in Inventory.</p>
+    </div>
+    <div class="reveal card-hover" style="background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px;position:relative;">
+      <div class="num" style="font-size:34px;font-weight:900;color:var(--accent);opacity:.2;position:absolute;top:12px;right:16px;">02</div>
+      <div style="width:40px;height:40px;border-radius:11px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;color:var(--accent);margin-bottom:14px;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></div>
+      <h4 style="font-weight:800;font-size:14.5px;margin:0 0 6px;">Log each sale</h4>
+      <p style="font-size:12.5px;color:var(--muted);line-height:1.55;margin:0;">Type Product ID + Qty. Date/time, name, price, profit & total auto-fill.</p>
+    </div>
+    <div class="reveal card-hover" style="background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px;position:relative;">
+      <div class="num" style="font-size:34px;font-weight:900;color:var(--accent);opacity:.2;position:absolute;top:12px;right:16px;">03</div>
+      <div style="width:40px;height:40px;border-radius:11px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;color:var(--accent);margin-bottom:14px;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg></div>
+      <h4 style="font-weight:800;font-size:14.5px;margin:0 0 6px;">Stock updates live</h4>
+      <p style="font-size:12.5px;color:var(--muted);line-height:1.55;margin:0;">Inventory drops automatically; low stock turns red.</p>
+    </div>
+    <div class="reveal card-hover" style="background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px;position:relative;">
+      <div class="num" style="font-size:34px;font-weight:900;color:var(--accent);opacity:.2;position:absolute;top:12px;right:16px;">04</div>
+      <div style="width:40px;height:40px;border-radius:11px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;color:var(--accent);margin-bottom:14px;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg></div>
+      <h4 style="font-weight:800;font-size:14.5px;margin:0 0 6px;">Reports generate</h4>
+      <p style="font-size:12.5px;color:var(--muted);line-height:1.55;margin:0;">Daily/weekly/monthly profit — no math needed.</p>
+    </div>
+    <div class="reveal card-hover" style="background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px;position:relative;">
+      <div class="num" style="font-size:34px;font-weight:900;color:var(--accent);opacity:.2;position:absolute;top:12px;right:16px;">05</div>
+      <div style="width:40px;height:40px;border-radius:11px;background:rgba(16,185,129,.15);display:flex;align-items:center;justify-content:center;color:var(--accent);margin-bottom:14px;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+      <h4 style="font-weight:800;font-size:14.5px;margin:0 0 6px;">Restock on time</h4>
+      <p style="font-size:12.5px;color:var(--muted);line-height:1.55;margin:0;">Follow reorder alerts — never lose a sale again.</p>
+    </div>
+  </div>
+</section>
+
+<!-- STORY -->
+<section class="max-w-4xl mx-auto px-5 py-16">
+  <div class="reveal" style="background:linear-gradient(135deg,var(--dark),var(--accent));border-radius:26px;padding:48px 36px;color:#fff;position:relative;overflow:hidden;box-shadow:0 28px 70px rgba(6,78,59,.4);">
+    <div style="position:absolute;top:-40px;right:-15px;font-size:180px;opacity:.1;font-family:serif;line-height:1;">"</div>
+    <p style="font-size:clamp(17px,2.4vw,22px);line-height:1.65;font-weight:600;margin:0 0 22px;max-width:580px;position:relative;">"Last night I closed at 9:00 PM and was done with everything by 9:15. Before, I used to stay up until midnight. Now I know exactly how much I earned — no more guessing. It gave me back my time."</p>
+    <div style="display:flex;align-items:center;gap:13px;position:relative;">
+      <div style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;">AL</div>
+      <div><div style="font-weight:800;font-size:15.5px;">Aling Lita</div><div style="font-size:12.5px;opacity:.75;">Sari-sari store owner</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" class="max-w-3xl mx-auto px-5 py-16">
+  <div class="reveal text-center mb-10">
+    <div style="font-size:12px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Questions</div>
+    <h2 style="font-size:clamp(26px,4vw,34px);font-weight:900;letter-spacing:-.02em;margin:0;">Frequently asked</h2>
+  </div>
+  <div class="reveal space-y-3">
+    <div class="faq-item" style="background:var(--card);border:1px solid var(--border);border-radius:15px;overflow:hidden;">
+      <button class="faq-q" aria-expanded="false" style="width:100%;padding:19px 24px;background:none;border:none;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-family:inherit;font-size:15px;font-weight:800;color:var(--text);text-align:left;">Do I need internet to use it?<span class="faq-icon" style="width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:18px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;">+</span></button>
+      <div class="faq-a"><p style="padding:0 24px 20px;margin:0;font-size:14px;color:var(--muted);line-height:1.7;">No. The entire system runs offline in Microsoft Excel. Save it on your laptop or USB drive — perfect for stores with no stable connection.</p></div>
+    </div>
+    <div class="faq-item" style="background:var(--card);border:1px solid var(--border);border-radius:15px;overflow:hidden;">
+      <button class="faq-q" aria-expanded="false" style="width:100%;padding:19px 24px;background:none;border:none;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-family:inherit;font-size:15px;font-weight:800;color:var(--text);text-align:left;">Does it cost anything monthly?<span class="faq-icon" style="width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:18px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;">+</span></button>
+      <div class="faq-a"><p style="padding:0 24px 20px;margin:0;font-size:14px;color:var(--muted);line-height:1.7;">Zero. No subscriptions, no hidden fees. If you already have Microsoft Excel (most laptops do), the Excel template is ready — just replace the sample products with yours.</p></div>
+    </div>
+    <div class="faq-item" style="background:var(--card);border:1px solid var(--border);border-radius:15px;overflow:hidden;">
+      <button class="faq-q" aria-expanded="false" style="width:100%;padding:19px 24px;background:none;border:none;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-family:inherit;font-size:15px;font-weight:800;color:var(--text);text-align:left;">What if I don't know Excel well?<span class="faq-icon" style="width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:18px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;">+</span></button>
+      <div class="faq-a"><p style="padding:0 24px 20px;margin:0;font-size:14px;color:var(--muted);line-height:1.7;">It's designed for beginners. You only type two things: Product ID and Quantity. Dropdowns prevent typos, every formula is pre-built, and a step-by-step guide is built into the Dashboard sheet.</p></div>
+    </div>
+    <div class="faq-item" style="background:var(--card);border:1px solid var(--border);border-radius:15px;overflow:hidden;">
+      <button class="faq-q" aria-expanded="false" style="width:100%;padding:19px 24px;background:none;border:none;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-family:inherit;font-size:15px;font-weight:800;color:var(--text);text-align:left;">Can I add my own products?<span class="faq-icon" style="width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:18px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;">+</span></button>
+      <div class="faq-a"><p style="padding:0 24px 20px;margin:0;font-size:14px;color:var(--muted);line-height:1.7;">Yes. Go to the Inventory sheet and add rows — assign a Product ID, name, cost, selling price, and reorder level. All dropdowns and formulas automatically recognize your new products.</p></div>
+    </div>
+    <div class="faq-item" style="background:var(--card);border:1px solid var(--border);border-radius:15px;overflow:hidden;">
+      <button class="faq-q" aria-expanded="false" style="width:100%;padding:19px 24px;background:none;border:none;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-family:inherit;font-size:15px;font-weight:800;color:var(--text);text-align:left;">What if the file gets corrupted?<span class="faq-icon" style="width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:18px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;">+</span></button>
+      <div class="faq-a"><p style="padding:0 24px 20px;margin:0;font-size:14px;color:var(--muted);line-height:1.7;">Keep a backup copy on a USB drive or Google Drive. Excel's AutoRecover also protects your work. We recommend saving at the end of each day — one click.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta" class="max-w-6xl mx-auto px-5 py-16">
+  <div class="reveal" style="background:linear-gradient(135deg,var(--dark),var(--accent));border-radius:26px;padding:52px 32px;text-align:center;color:#fff;box-shadow:0 28px 70px rgba(6,78,59,.4);position:relative;overflow:hidden;">
+    <div style="position:absolute;top:-60px;left:-40px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.08);"></div>
+    <div style="position:absolute;bottom:-80px;right:-30px;width:240px;height:240px;border-radius:50%;background:rgba(255,255,255,.06);"></div>
+    <h2 style="font-size:clamp(26px,4vw,38px);font-weight:900;letter-spacing:-.02em;margin:0 0 14px;position:relative;">Ready to modernize your store?</h2>
+    <p style="font-size:16px;opacity:.9;margin:0 0 28px;max-width:480px;margin-left:auto;margin-right:auto;position:relative;">One Excel file. Zero cost. Everything you need to run your sari-sari store with comfort.</p>
+    <a href="Pandify.xlsx" download="OfficialPandifySystem.xlsx" style="text-decoration:none;display:inline-block;padding:16px 36px;border-radius:14px;background:#fff;color:var(--dark);font-weight:900;font-size:16px;box-shadow:0 10px 28px rgba(0,0,0,.25);position:relative;transition:transform .2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">Get the Excel</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer style="border-top:1px solid var(--border);padding:36px 20px;text-align:center;background:#fff;">
+  <div class="flex items-center justify-center gap-2.5 mb-3">
+    <div style="width:45px;height:45px;border-radius:9px;background:linear-gradient(135deg,var(--dark),var(--accent));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:13px;"><img src="Panda.png" alt="Pandify logo" style="width:auto;height:auto;"></div>
+    <span style="font-weight:900;font-size:18px;">Pand<span style="color:var(--accent);">ify</span></span>
+  </div>
+  <p style="font-size:13px;color:var(--muted);margin:0 0 6px;font-weight:600;">Group Mixed · Research Presentation</p>
+  <p style="font-size:12px;color:var(--muted);opacity:.7;margin:0;">Sari-Sari Store Management System · Built on Microsoft Excel · ©2026</p>
+</footer>
+
+</div>
+
+<script>
+(function(){
+  // Scroll reveal
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');io.unobserve(e.target);}});},{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(function(el){io.observe(el);});
+
+  // Scroll-spy nav
+  var navLinks=document.querySelectorAll('.nav-link');
+  var secMap={};
+  navLinks.forEach(function(l){var id=l.getAttribute('data-sec');if(id)secMap[id]=l;});
+  var spy=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){navLinks.forEach(function(l){l.classList.remove('active');});var l=secMap[e.target.id];if(l)l.classList.add('active');}});},{rootMargin:'-40% 0px -55% 0px'});
+  Object.keys(secMap).forEach(function(id){var s=document.getElementById(id);if(s)spy.observe(s);});
+
+  // Animated counters
+  var cio=new IntersectionObserver(function(es){es.forEach(function(e){if(!e.isIntersecting)return;var el=e.target;var t=parseInt(el.getAttribute('data-target'),10);var s=0;var step=Math.max(1,Math.ceil(t/55));var iv=setInterval(function(){s+=step;if(s>=t){s=t;clearInterval(iv);}el.textContent=s.toLocaleString();},22);cio.unobserve(el);});},{threshold:.5});
+  document.querySelectorAll('.counter').forEach(function(el){cio.observe(el);});
+
+  // Hero live ticker (sales & profit gently fluctuate)
+  var hs=document.getElementById('heroSales'),hp=document.getElementById('heroProfit'),hp2=document.getElementById('heroProfit2');
+  var baseS=150,baseP=42;
+  if(!matchMedia('(prefers-reduced-motion: reduce)').matches)setInterval(function(){
+    baseS+=Math.floor(Math.random()*25-8);if(baseS<120)baseS=120;if(baseS>260)baseS=260;
+    baseP=Math.round(baseS*.28);
+    if(hs)hs.textContent='₱'+baseS;
+    if(hp)hp.textContent='₱'+baseP;if(hp2)hp2.textContent='₱'+baseP;
+  },2200);
+
+  // Feature tabs
+  var tabs=document.querySelectorAll('.tab-btn');
+  tabs.forEach(function(b){b.addEventListener('click',function(){
+    tabs.forEach(function(x){x.classList.remove('active');});
+    b.classList.add('active');
+    document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active');});
+    var p=document.getElementById(b.getAttribute('data-tab'));
+    if(p)p.classList.add('active');
+  });});
+
+  // Sheet switcher
+  var sheetData={
+    s0:['Dashboard','Your command center — 6 live KPI cards, a 7-day sales trend chart, low-stock alerts, and a how-to guide. Everything updates as you log sales.'],
+    s2:['Sales Log','Every sale recorded in one place. Type Product ID + Qty — name, price, total, cost, and profit auto-calculate. Credit rows are highlighted.'],
+    s3:['Inventory','The product master list — cost, selling price, current stock, and reorder level. Low-stock items flash red automatically.'],
+    s4:['Credit Ledger','Tracks every utang. Enter amount owed and payments — balance and status (Unpaid / Partial / Paid) update automatically.'],
+    s5:['Reports','Auto-generated daily, weekly, and monthly sales & profit — plus a top-selling products ranking. No math needed.']
+  };
+  var chips=document.querySelectorAll('.sheet-chip'),st=document.getElementById('sheetTitle'),sd=document.getElementById('sheetDesc'),sp=document.getElementById('sheetPreview');
+  chips.forEach(function(ch){ch.addEventListener('click',function(){
+    chips.forEach(function(c){c.classList.remove('active');});
+    ch.classList.add('active');
+    var d=sheetData[ch.getAttribute('data-sheet')];
+    if(d){st.textContent=d[0];sd.textContent=d[1];}
+    sp.style.transform='scale(.98)';setTimeout(function(){sp.style.transform='scale(1)';},150);
+  });});
+
+  // Live POS demo
+  var prod=document.getElementById('demoProd'),qty=document.getElementById('demoQty'),cash=document.getElementById('demoCash');
+  function fmt(n){return '₱'+n.toFixed(2);}
+  function update(){
+    var p=parseFloat(prod.value)||0,q=Math.max(0,parseInt(qty.value,10)||0),c=Math.max(0,parseFloat(cash.value)||0);
+    var tot=p*q;
+    document.getElementById('demoLineName').textContent=prod.options[prod.selectedIndex].text.split(' — ')[0]+' × '+q;
+    document.getElementById('demoLineAmt').textContent=fmt(tot);
+    document.getElementById('demoCashOut').textContent=fmt(c);
+    var ch=c-tot;
+    var chEl=document.getElementById('demoChange'),warn=document.getElementById('demoWarn');
+    if(ch<0){chEl.textContent=fmt(ch);chEl.style.color='#fca5a5';warn.style.display='block';}
+    else{chEl.textContent=fmt(ch);chEl.style.color='#a7f3d0';warn.style.display='none';}
+  }
+  [prod,qty,cash].forEach(function(el){el.addEventListener('input',update);el.addEventListener('change',update);});
+  update();
+
+  // Compare toggle
+  var tog=document.getElementById('compareToggle'),manual=document.getElementById('cardManual'),excel=document.getElementById('cardExcel'),lblM=document.getElementById('lblManual'),lblE=document.getElementById('lblExcel');
+  tog.addEventListener('click',function(){
+    tog.classList.toggle('on');
+    var on=tog.classList.contains('on');tog.setAttribute('aria-checked',on);
+    manual.style.opacity=on?'.5':'1';excel.style.opacity=on?'1':'.55';
+    excel.style.transform=on?'scale(1)':'scale(.97)';
+    lblM.style.color=on?'var(--muted)':'var(--text)';lblE.style.color=on?'var(--accent)':'var(--muted)';
+  });
+
+  tog.addEventListener('keydown',function(e){if(e.key===' '||e.key==='Enter'){e.preventDefault();tog.click();}});
+
+  // FAQ accordion
+  document.querySelectorAll('.faq-q').forEach(function(q){
+    q.addEventListener('click',function(){
+      var item=q.parentElement;
+      var wasOpen=item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(function(i){i.classList.remove('open');});
+      if(!wasOpen)item.classList.add('open');
+      document.querySelectorAll('.faq-q').forEach(function(b){b.setAttribute('aria-expanded',b.parentElement.classList.contains('open'));});
+    });
+  });
+})();
+
+document.addEventListener('contextmenu', e => e.preventDefault());
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'F12' || 
+      (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+      (e.ctrlKey && e.key === 'u')) {
+    e.preventDefault();
+  }
+});
+
+</script>
+  
+</body>
+
+</html>
